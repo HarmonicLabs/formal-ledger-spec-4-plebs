@@ -6,7 +6,7 @@ Here you find some notes trying to translate the (formal-ledger-specifications p
 
 ## State transition
 
-A state transition is with this scary thing in the pdf:
+A state transition is introduced with this scary thing in the pdf:
 
 ![state transition](./assets/state_transition.png)
 
@@ -36,9 +36,9 @@ even this translation, while not using strange symbols from dead languages, is p
 
 In most cases the context (`ctx`) will be the protocol parameters the slot and maybe some other "global variable",
 
-the `initialState` will be some subset of the ledger state (sometimes single utxos),
+the `initialState` will be some subset of the ledger state (utxos, staking accounts, pools, ...),
 
-the `signal` will be a transaction (`Tx`).
+the `signal` will be a transaction (`Tx`) in the case of utxos, certificates in case of pools and delegations, etc.
 
 # 2 Notation
 
