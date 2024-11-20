@@ -109,16 +109,24 @@ function leftBiasedUnion<A,B>( preferred: Map<A,B>, other: Map<A,B> ): Map<A,B>
 
 ## addition union
 
+```
+∪⁺
+```
+
 joins two maps (`Map<A,B>`) adding values corresponding to the same key
 
 ```ts
-function additionUnion<A,B>( preferred: Map<A,B>, other: Map<A,B> ): Map<A,B>
+function additionUnion<A,B>( fst: Map<A,B>, snd: Map<A,B> ): Map<A,B>
 {
-    const result = new Map<A,B>( preferred.entries() );
-    for(const [ k, v ] of other )
+    const result = new Map<A,B>( fst.entries() );
+    for(const [ k, v ] of snd )
     {
-        if( result.has( k ) ) result.set( k, v + result.get( k ) );
-        else result.set( k, v )
+        result.set(
+            k,
+            // sum if already present
+            // just `v` if new entry
+            v + (result.get(k) ?? 0)
+        );
     }
     return result;
 }
@@ -140,11 +148,11 @@ simply does
 function mapPartial<A,B>( set: Set<A>, f: PartialFunc<A,B> ): Set<B>
 {
     let tmp: B | undefined = undefined;
-    const result = new Set<B>()
+    const result = new Set<B>();
     for( const elem of set )
     {
         tmp = f( elem );
-        if( tmp !== undefined ) result.add( elem )
+        if( tmp !== undefined ) result.add( tmp );
     }
     return result;
 }
@@ -152,7 +160,101 @@ function mapPartial<A,B>( set: Set<A>, f: PartialFunc<A,B> ): Set<B>
 
 # 3 crypto stuff
 
-`SKey` => private key
-`VKey` => public key
-`Sig`  => signature
-`Ser`  => payload (to sign)
+- `SKey` => private key
+- `VKey` => public key
+- `Sig`  => signature
+- `Ser`  => payload (to sign)
+
+# 14 Ledger State Transition
+
+Here (page 42) we have a first complete idea of what a `LedgerState` (or `LState`) should look like.
+
+With it is also introduced an `LedgerEnv` (or `LEnv`) that does the part of the context in a transition (the funny greek letter or `ctx`, with "global variables")
+
+a `LedgerState` should have this shape:
+```ts
+interface LedgerEnv {
+    slot: Slot // number
+    ppolicy: ScriptHash | undefined // hash 28
+    pparams: ProtocolParameters
+    enactState: EnactState
+    treasury: Coin // number
+}
+
+interface LedgerState {
+    utxoState: UtxoState;
+    govState: GovState;
+    certState: CertState
+}
+```
+
+the respective types of the fields where introduced before in the pdf.
+
+You can find them with an easy `Ctrl + F`, we report them here for clarity
+
+```ts
+interface UtxoEnv {
+    slot: Slot // number
+    pparams: ProtocolParameters
+    treasury: Coin // number
+}
+
+interface UtxoState {
+    utxo: UTxO
+    fees: Coin // number
+    deposits: Deposits
+    donations: Coin // number
+}
+```
+
+```ts
+interface GovEnv {
+    txHash: Hash28
+    epoch: Epoch // number
+    pparams: ProtocolParameters
+    ppolicy: ScriptHash | undefined // hash 28
+    enactState: EnactState
+    certState: CertState
+}
+
+type GovState = Map<GovActionId, GovActionState>;
+
+interface GovActionState {
+    votes: Map<Voter, Vote>;
+    returnAddr: StakeAddress;
+    expiresIn: Epoch; // number
+    action: GovAction;
+    /** 
+     * undefined if and only if `action` is
+     * `TreasuryWithdrawal` or `Info`
+     * 
+     * all other gov avctions need a prev
+    **/
+    prevAction: GovAction | undefined
+}
+```
+
+```ts
+interface CertState {
+    delegation: DelegationState // `DState` in specs
+    pools: PoolsState // `PState` in specs
+    govCerts: GovCertsState // `GState` in specs
+}
+
+interface DelegationState {
+    voteDelegations: Map<Credential, VoteDelegation>
+    stakeDelegation: Map<Credential, PoolHash>
+    // account model
+    rewards: Map<Credential, Coin>
+}
+
+interface PoolsState {
+    pools: Map<PoolHash, PoolParams>,
+    retiring: Map<PoolHash, Epoch>
+}
+
+interface GovCertsState {
+    dreps: Map<Credential, Epoch>;
+    ccHotKeys: Map<Credential, (Credential | undefined)>
+}
+```
