@@ -1,6 +1,6 @@
 # formal-ledger-spec-4-plebs
 
-Here you find some notes trying to translate the (formal-ledger-specifications pdf)(https://intersectmbo.github.io/formal-ledger-specifications/pdfs/cardano-ledger.pdf) in something that inferior imperative programmers like myself can understand.
+Here you find some notes trying to translate the [formal-ledger-specifications pdf](https://intersectmbo.github.io/formal-ledger-specifications/pdfs/cardano-ledger.pdf) in something that inferior imperative programmers like myself can understand.
 
 # 1 Introduciton
 
