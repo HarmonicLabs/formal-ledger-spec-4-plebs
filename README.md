@@ -4,7 +4,7 @@ Here you find some notes trying to translate the (formal-ledger-specifications p
 
 # 1 Introduciton
 
-## State treansitions
+## State transition
 
 A state transition is with this scary thing in the pdf:
 
